@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSF Air Vehicle Software Standards</title>
+    <style>
+        :root {
+            --bg-deep: #020617;
+            --bg-panel: rgba(30, 41, 59, 0.7);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent-blue: #38bdf8;
+            --correct-green: #10b981;
+            --wrong-red: #ef4444;
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-deep);
+            color: var(--text-main);
+            line-height: 1.6;
+            background-image: 
+                linear-gradient(rgba(56, 189, 248, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(56, 189, 248, 0.05) 1px, transparent 1px);
+            background-size: 30px 30px;
+            background-attachment: fixed;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            width: 100%;
+            animation: fadeUp 0.8s ease-out forwards;
+        }
+
+        /* Glassmorphism Panels */
+        .glass-panel {
+            background: var(--bg-panel);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 40px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            position: relative;
+        }
+
+        /* Audio Toggle Button */
+        .audio-control {
+            position: absolute;
+            top: 40px;
+            right: 40px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9rem;
+            color: var(--accent-blue);
+            font-weight: bold;
+            background: rgba(0,0,0,0.3);
+            padding: 10px 15px;
+            border-radius: 30px;
+            border: 1px solid var(--accent-blue);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .audio-control:hover { background: rgba(56, 189, 248, 0.2); }
+        .audio-indicator { width: 10px; height: 10px; border-radius: 50%; background: #475569; transition: background 0.3s;}
+        .audio-indicator.active { background: var(--correct-green); box-shadow: 0 0 10px var(--correct-green); }
+
+        header h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(to right, #fff, var(--accent-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+            max-width: 80%;
+        }
+
+        header p { color: var(--text-muted); font-size: 1.2rem; }
+
+        h2 {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        h2::before {
+            content: ''; display: inline-block; width: 12px; height: 12px;
+            background-color: var(--accent-blue); border-radius: 50%;
+        }
+
+        .educational-content p { margin-bottom: 15px; font-size: 1.1rem; color: #cbd5e1; }
+
+        /* Code Transformer Widget */
+        .code-transformer {
+            background: #0f172a;
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            overflow: hidden;
+            margin-top: 30px;
+        }
+
+        .transformer-header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 15px 20px; background: rgba(0,0,0,0.3); border-bottom: 1px solid var(--glass-border);
+        }
+
+        .toggle-container { display: flex; align-items: center; gap: 15px; font-weight: bold; color: var(--accent-blue); }
+
+        .switch { position: relative; display: inline-block; width: 50px; height: 26px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #334155; transition: .4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--correct-green); }
+        input:checked + .slider:before { transform: translateX(24px); }
+
+        .code-window { padding: 20px; font-family: 'Courier New', Courier, monospace; font-size: 1rem; color: #e2e8f0; position: relative; min-height: 200px; }
+        .code-state { position: absolute; top: 20px; left: 20px; transition: opacity 0.4s ease; }
+        .tooltip { color: var(--accent-blue); border-bottom: 1px dashed var(--accent-blue); cursor: help; position: relative; }
+        .tooltip:hover::after {
+            content: attr(data-tip); position: absolute; top: -40px; left: 0; background: var(--accent-blue);
+            color: #000; padding: 5px 10px; border-radius: 4px; font-size: 0.85rem; white-space: nowrap; z-index: 10;
+        }
+
+        /* Quiz Section */
+        .quiz-ui { position: relative; min-height: 350px; }
+        .question-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .progress-text { color: var(--accent-blue); font-weight: bold; }
+        #question-text { font-size: 1.3rem; margin-bottom: 25px; font-weight: 500; }
+        .options-grid { display: grid; gap: 12px; }
+        
+        .option-btn {
+            background: rgba(255, 255, 255, 0.05); border: 1px solid var(--glass-border);
+            color: var(--text-main); padding: 16px 20px; border-radius: 8px; font-size: 1.05rem;
+            text-align: left; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; gap: 15px;
+        }
+
+        .option-btn::before {
+            content: ''; display: inline-block; width: 20px; height: 20px;
+            border: 2px solid var(--text-muted); border-radius: 50%; transition: all 0.2s ease;
+        }
+
+        .option-btn:hover:not(:disabled) { background: rgba(56, 189, 248, 0.1); border-color: var(--accent-blue); }
+        .option-btn.correct { background: rgba(16, 185, 129, 0.1); border-color: var(--correct-green); }
+        .option-btn.correct::before { background: var(--correct-green); border-color: var(--correct-green); box-shadow: inset 0 0 0 3px var(--bg-panel); }
+        .option-btn.wrong { background: rgba(239, 68, 68, 0.1); border-color: var(--wrong-red); opacity: 0.7; }
+        .option-btn.wrong::before { background: var(--wrong-red); border-color: var(--wrong-red); }
+
+        #feedback-panel { margin-top: 20px; padding: 15px 20px; border-radius: 8px; font-size: 1rem; display: none; animation: fadeIn 0.4s ease; }
+
+        .action-btn {
+            background: var(--accent-blue); color: #000; border: none; padding: 12px 24px;
+            font-size: 1.1rem; font-weight: bold; border-radius: 8px; cursor: pointer;
+            margin-top: 20px; transition: background 0.2s; float: right; display: none;
+        }
+        .action-btn:hover { background: #bae6fd; }
+
+        /* Results Screen */
+        #result-screen { display: none; text-align: center; padding: 20px 0; }
+        .svg-container { position: relative; width: 150px; height: 150px; margin: 0 auto 20px; }
+        .progress-ring { transform: rotate(-90deg); }
+        .progress-ring__circle { stroke-dasharray: 440; stroke-dashoffset: 440; transition: stroke-dashoffset 1.5s ease-out; }
+        .score-number { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 2rem; font-weight: bold; color: var(--text-main); }
+
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        @media (max-width: 600px) {
+            .glass-panel { padding: 25px; }
+            header h1 { font-size: 1.8rem; max-width: 100%; margin-top: 40px; }
+            .audio-control { top: 15px; right: 15px; padding: 5px 10px; font-size: 0.8rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header class="glass-panel">
+        <!-- New Music Toggle Button -->
+        <div class="audio-control" id="music-toggle">
+            <div class="audio-indicator" id="music-dot"></div>
+            <span id="music-text">TOGGLE MUSIC</span>
+        </div>
+        <h1>Zero Margin For Error.</h1>
+        <p>Mastering the Joint Strike Fighter (JSF) Air Vehicle C++ Coding Standards</p>
+    </header>
+
+    <section class="glass-panel">
+        <h2>Why These Standards Matter</h2>
+        <div class="educational-content">
+            <p>In aerospace engineering, software doesn't just process data—it keeps supersonic aircraft in the sky. The <strong>JSF Air Vehicle C++ Coding Standards</strong> were forged to ensure that every line of code controlling flight surfaces and weapons systems is utterly predictable.</p>
+            <p>By heavily restricting the C++ language (banning exceptions, dynamic memory during flight, and self-modifying code), developers eliminate "undefined behavior." This creates a mathematical certainty that the software can be rigorously tested and proven safe before takeoff.</p>
+        </div>
+
+        <div class="code-transformer">
+            <div class="transformer-header">
+                <span>Interactive Code Analysis</span>
+                <div class="toggle-container">
+                    <span>Standard C++</span>
+                    <label class="switch">
+                        <input type="checkbox" id="code-toggle">
+                        <span class="slider"></span>
+                    </label>
+                    <span style="color: var(--correct-green);">JSF Compliant</span>
+                </div>
+            </div>
+            <div class="code-window">
+                <div id="bad-code" class="code-state" style="opacity: 1; z-index: 2;">
+<pre><span style="color:#f87171;">// Standard (Unsafe) Implementation</span>
+void processSensorData() {
+    <span style="color:#f87171;">try</span> {
+        int* data = <span style="color:#f87171;">new</span> int[1000]; <span style="color:#94a3b8;">// Dynamic allocation</span>
+        if (readSensor() == NULL) {
+            <span style="color:#f87171;">throw</span> "Sensor Error"; <span style="color:#94a3b8;">// Exception thrown</span>
+        }
+        if (data) data[0] = 1;
+    } <span style="color:#f87171;">catch</span> (...) {
+        <span style="color:#94a3b8;">// Handle error</span>
+    }
+}</pre>
+                </div>
+                <div id="good-code" class="code-state" style="opacity: 0; z-index: 1;">
+<pre><span style="color:#10b981;">// JSF-Compliant Implementation</span>
+void processSensorData() {
+    <span class="tooltip" data-tip="AV Rule 206: No dynamic memory after init. Use stack/pools.">Array&lt;int32, 1000&gt; data;</span> 
+    
+    <span class="tooltip" data-tip="AV Rule 208: Exceptions prohibited. Use status codes.">StatusType status</span> = readSensor(); 
+    
+    <span class="tooltip" data-tip="AV Rule 59: Braces '{}' required even for single statements.">if (status == SENSOR_OK) {</span>
+        data[0] = 1;
+    <span style="color:#38bdf8;">}</span> else {
+        handleError(status);
+    <span style="color:#38bdf8;">}</span>
+}</pre>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Interactive Quiz -->
+    <section class="glass-panel">
+        <div id="quiz-screen" class="quiz-ui">
+            <div class="question-header">
+                <h2>Flight Readiness Check</h2>
+                <span class="progress-text" id="progress-text">1 / 5</span>
+            </div>
+            <div id="question-text">Question text goes here</div>
+            <div class="options-grid" id="options-container"></div>
+            <div id="feedback-panel"></div>
+            <button id="next-btn" class="action-btn">Next Parameter &rarr;</button>
+            <div style="clear: both;"></div>
+        </div>
+
+        <div id="result-screen">
+            <h2>Diagnostic Complete</h2>
+            <div class="svg-container">
+                <svg width="150" height="150" class="progress-ring">
+                    <circle stroke="rgba(255,255,255,0.1)" stroke-width="12" fill="transparent" r="70" cx="75" cy="75"/>
+                    <circle id="score-ring" class="progress-ring__circle" stroke="var(--accent-blue)" stroke-width="12" fill="transparent" r="70" cx="75" cy="75"/>
+                </svg>
+                <div class="score-number" id="score-percent">0%</div>
+            </div>
+            <p id="eval-message" style="font-size: 1.2rem; margin-bottom: 30px; color: #cbd5e1;"></p>
+            <button id="restart-btn" class="action-btn" style="float: none; display: inline-block;">Recalibrate & Retry</button>
+        </div>
+    </section>
+
+</div>
+
+<script>
+    // ==========================================
+    // ACTUAL BACKGROUND MUSIC & UI SOUND EFFECTS
+    // ==========================================
+    
+    // High-tech, cinematic background music (Royalty Free via Pixabay CDN)
+    const bgMusic = new Audio('https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3?filename=night-city-108846.mp3');
+    bgMusic.loop = true;
+    bgMusic.volume = 0.0; // Start at 0 for fade-in effect
+    let isMusicPlaying = false;
+
+    // UI Sound effect synthesizer (for clicks and dings)
+    let audioCtx = null;
+    function initUI_Audio() {
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+    }
+
+    // Function to play short UI feedback sounds
+    function playTone(freq, type, duration, vol) {
+        initUI_Audio();
+        if (!audioCtx) return;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        
+        gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+        
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+    }
+
+    // Handle Music Toggle Button
+    document.getElementById("music-toggle").addEventListener("click", () => {
+        initUI_Audio(); // Ensure audio context is ready for UI sounds
+        playTone(800, 'sine', 0.1, 0.1); // Play a click sound
+        
+        const dot = document.getElementById("music-dot");
+        const text = document.getElementById("music-text");
+
+        if (isMusicPlaying) {
+            // Fade out
+            let fadeOut = setInterval(() => {
+                if (bgMusic.volume > 0.05) {
+                    bgMusic.volume -= 0.05;
+                } else {
+                    clearInterval(fadeOut);
+                    bgMusic.pause();
+                    bgMusic.volume = 0;
+                }
+            }, 50);
+            
+            dot.classList.remove("active");
+            text.innerText = "MUSIC: OFF";
+            isMusicPlaying = false;
+        } else {
+            // Play and Fade in
+            bgMusic.play();
+            let fadeIn = setInterval(() => {
+                if (bgMusic.volume < 0.3) { // Max volume is 0.3 so it isn't too loud
+                    bgMusic.volume += 0.05;
+                } else {
+                    clearInterval(fadeIn);
+                }
+            }, 100);
+
+            dot.classList.add("active");
+            text.innerText = "MUSIC: ON";
+            isMusicPlaying = true;
+        }
+    });
+
+    // --- Code Transformer Logic ---
+    const codeToggle = document.getElementById('code-toggle');
+    const badCode = document.getElementById('bad-code');
+    const goodCode = document.getElementById('good-code');
+
+    codeToggle.addEventListener('change', (e) => {
+        playTone(600, 'square', 0.1, 0.05); // Tech click
+        if(e.target.checked) {
+            badCode.style.opacity = '0'; badCode.style.zIndex = '1';
+            goodCode.style.opacity = '1'; goodCode.style.zIndex = '2';
+        } else {
+            badCode.style.opacity = '1'; badCode.style.zIndex = '2';
+            goodCode.style.opacity = '0'; goodCode.style.zIndex = '1';
+        }
+    });
+
+    // --- Quiz Logic ---
+    const quizData = [
+        {
+            question: "Why are C++ exceptions (throw, catch, try) strictly prohibited under AV Rule 208?",
+            options: [
+                "They slow down the aircraft's physical sensors.",
+                "Tool support is not adequate to guarantee safety-critical bounds.",
+                "They use too much RAM on the flight computer.",
+                "They are an outdated C++ feature."
+            ], correct: 1, explanation: "Exceptions disrupt predictable control flow. Static analysis tools cannot adequately verify their safety bounds in flight environments."
+        },
+        {
+            question: "AV Rule 3 caps the cyclomatic complexity of any function at 20. What is the primary purpose of this rule?",
+            options: [
+                "To force developers to write shorter lines of code.",
+                "To ensure the function compiles faster.",
+                "To limit the number of execution paths, ensuring it remains testable.",
+                "To reduce the overall file size of the executable."
+            ], correct: 2, explanation: "Cyclomatic complexity measures decision logic. Capping it ensures every possible path through the code can be thoroughly unit-tested."
+        },
+        {
+            question: "True or False: According to AV Rule 59, an 'if' statement with only one line of code underneath it does not require braces {}.",
+            options: ["True", "False"], correct: 1, explanation: "False. AV Rule 59 requires braces '{}' for all control structures to prevent accidental bugs when new lines are added later."
+        },
+        {
+            question: "What is the JSF standard's stance on dynamic memory allocation (e.g., using 'new' or 'malloc')? (AV Rule 206)",
+            options: [
+                "It is strictly prohibited everywhere.",
+                "It is allowed, but only if 'delete' is called immediately.",
+                "It shall not occur after initialization (pre-flight).",
+                "It is encouraged for optimal memory usage."
+            ], correct: 2, explanation: "AV Rule 206 states memory must be allocated during the system's initialization phase. Allocating during flight can cause heap fragmentation and latency."
+        },
+        {
+            question: "Which of the following describes the JSF rule on Self-Modifying Code? (AV Rule 2)",
+            options: [
+                "It is strictly prohibited.",
+                "It is allowed for AI targeting systems.",
+                "It must be reviewed by two senior developers.",
+                "It is only allowed in assembly language."
+            ], correct: 0, explanation: "AV Rule 2 states 'There shall not be any self-modifying code.' Code that alters its own instructions during execution is impossible to reliably verify."
+        }
+    ];
+
+    let currentQuestionIndex = 0; let score = 0;
+    const questionText = document.getElementById("question-text");
+    const optionsContainer = document.getElementById("options-container");
+    const feedbackPanel = document.getElementById("feedback-panel");
+    const nextBtn = document.getElementById("next-btn");
+    const progressText = document.getElementById("progress-text");
+    
+    function loadQuestion() {
+        nextBtn.style.display = "none"; feedbackPanel.style.display = "none";
+        optionsContainer.innerHTML = "";
+        progressText.innerText = `${currentQuestionIndex + 1} / ${quizData.length}`;
+        const currentData = quizData[currentQuestionIndex];
+        questionText.textContent = currentData.question;
+
+        currentData.options.forEach((option, index) => {
+            const button = document.createElement("button");
+            button.textContent = option;
+            button.classList.add("option-btn");
+            
+            // Hover sound effect
+            button.addEventListener('mouseenter', () => playTone(300, 'sine', 0.05, 0.02));
+            button.onclick = () => selectAnswer(index, button);
+            optionsContainer.appendChild(button);
+        });
+    }
+
+    function selectAnswer(selectedIndex, selectedButton) {
+        const currentData = quizData[currentQuestionIndex];
+        const allButtons = optionsContainer.querySelectorAll(".option-btn");
+        
+        allButtons.forEach(btn => btn.disabled = true);
+        feedbackPanel.style.display = "block";
+
+        if (selectedIndex === currentData.correct) {
+            // Success Chord Sound
+            playTone(523.25, 'sine', 0.2, 0.1); // C
+            setTimeout(()=>playTone(659.25, 'sine', 0.2, 0.1), 100); // E
+            setTimeout(()=>playTone(783.99, 'sine', 0.3, 0.1), 200); // G
+            
+            selectedButton.classList.add("correct");
+            feedbackPanel.style.backgroundColor = "rgba(16, 185, 129, 0.1)";
+            feedbackPanel.style.borderLeft = "4px solid var(--correct-green)";
+            feedbackPanel.innerHTML = `<strong style="color:var(--correct-green)">Correct Checksum.</strong> <br> ${currentData.explanation}`;
+            score++;
+        } else {
+            // Error Buzz Sound
+            playTone(150, 'sawtooth', 0.3, 0.1);
+            setTimeout(()=>playTone(130, 'sawtooth', 0.4, 0.1), 150);
+
+            selectedButton.classList.add("wrong");
+            allButtons[currentData.correct].classList.add("correct"); 
+            feedbackPanel.style.backgroundColor = "rgba(239, 68, 68, 0.1)";
+            feedbackPanel.style.borderLeft = "4px solid var(--wrong-red)";
+            feedbackPanel.innerHTML = `<strong style="color:var(--wrong-red)">Rule Violation.</strong> <br> ${currentData.explanation}`;
+        }
+        nextBtn.style.display = "block";
+    }
+
+    nextBtn.onclick = () => {
+        playTone(600, 'square', 0.1, 0.05); // Click sound
+        currentQuestionIndex++;
+        if (currentQuestionIndex < quizData.length) loadQuestion();
+        else showResults();
+    };
+
+    function showResults() {
+        document.getElementById("quiz-screen").style.display = "none";
+        const resultScreen = document.getElementById("result-screen");
+        resultScreen.style.display = "block";
+        resultScreen.style.animation = "fadeIn 0.6s ease";
+        
+        const percentage = Math.round((score / quizData.length) * 100);
+        document.getElementById("score-percent").innerText = `${percentage}%`;
+        
+        const circle = document.getElementById('score-ring');
+        const radius = circle.r.baseVal.value;
+        const circumference = radius * 2 * Math.PI;
+        const offset = circumference - (percentage / 100) * circumference;
+        
+        setTimeout(() => {
+            circle.style.strokeDashoffset = offset;
+            if(percentage === 100) {
+                circle.style.stroke = "var(--correct-green)";
+                document.getElementById("score-percent").style.color = "var(--correct-green)";
+            } else if(percentage < 80) {
+                circle.style.stroke = "var(--wrong-red)";
+                document.getElementById("score-percent").style.color = "var(--wrong-red)";
+            }
+        }, 100);
+
+        let evalText = "";
+        if(percentage === 100) evalText = "Flight Clearance Granted. Exceptional grasp of safety protocols.";
+        else if(percentage >= 80) evalText = "Flight Clearance Approved. Review minor deviations.";
+        else evalText = "Ground Stop Imposed. Strict adherence to AV Rules is mandatory. Please review and retry.";
+
+        document.getElementById("eval-message").innerText = evalText;
+    }
+
+    document.getElementById("restart-btn").onclick = () => {
+        playTone(400, 'sine', 0.1, 0.1);
+        currentQuestionIndex = 0; score = 0;
+        document.getElementById("result-screen").style.display = "none";
+        
+        const circle = document.getElementById('score-ring');
+        circle.style.transition = 'none';
+        circle.style.strokeDashoffset = 440;
+        circle.style.stroke = "var(--accent-blue)";
+        document.getElementById("score-percent").style.color = "var(--text-main)";
+        setTimeout(() => circle.style.transition = 'stroke-dashoffset 1.5s ease-out', 50);
+
+        document.getElementById("quiz-screen").style.display = "block";
+        loadQuestion();
+    };
+
+    loadQuestion();
+</script>
+</body>
+</html>
