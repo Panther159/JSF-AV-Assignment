@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JSF-AV Coding Standards Learning App</title>
+
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background: #0b1e2d;
+        color: #e6f1ff;
+        margin: 0;
+        padding: 0;
+    }
+
+    header {
+        background: #132f4c;
+        padding: 20px;
+        text-align: center;
+        font-size: 28px;
+        font-weight: bold;
+    }
+
+    section {
+        padding: 20px;
+        max-width: 900px;
+        margin: auto;
+    }
+
+    h2 {
+        color: #4fc3f7;
+    }
+
+    .card {
+        background: #11293d;
+        padding: 15px;
+        margin: 15px 0;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.4);
+    }
+
+    button {
+        background: #4fc3f7;
+        border: none;
+        padding: 10px 15px;
+        margin: 10px 5px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+    }
+
+    button:hover {
+        background: #29b6f6;
+    }
+
+    .answer {
+        display: block;
+        margin: 8px 0;
+        padding: 8px;
+        background: #1b3b55;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    .correct {
+        background: #2e7d32 !important;
+    }
+
+    .wrong {
+        background: #c62828 !important;
+    }
+
+    #result {
+        font-size: 20px;
+        font-weight: bold;
+        margin-top: 15px;
+    }
+</style>
+</head>
+
+<body>
+
+<header>
+JSF-AV Coding Standards Learning App ✈️
+</header>
+
+<section>
+
+<!-- EDUCATIONAL CONTENT -->
+<div class="card">
+<h2>Why These Rules Matter</h2>
+
+<p>
+The JSF-AV (Joint Strike Fighter Air Vehicle) coding standards exist to make software
+<strong>safe, reliable, and predictable</strong>. In military and aerospace systems,
+software failures can cause catastrophic consequences.
+</p>
+
+<p>
+These rules focus on:
+</p>
+
+<ul>
+<li><strong>Reliability:</strong> Code must behave consistently every time.</li>
+<li><strong>Maintainability:</strong> Engineers must understand and fix code quickly.</li>
+<li><strong>Testability:</strong> Code should be easy to test for errors.</li>
+<li><strong>Safety:</strong> Avoid risky features like self-modifying code.</li>
+</ul>
+
+<p>
+For example:
+</p>
+
+<ul>
+<li>Functions are limited in size to reduce complexity.</li>
+<li>Self-modifying code is completely forbidden.</li>
+<li>Code must be readable and structured clearly.</li>
+</ul>
+
+<p>
+Without these rules, small bugs could turn into major failures in aircraft systems.
+That’s why strict standards are required.
+</p>
+</div>
+
+<!-- QUIZ -->
+<div class="card">
+<h2>Test Your Knowledge 🧠</h2>
+
+<div id="quiz"></div>
+
+<button onclick="submitQuiz()">Submit Answers</button>
+
+<div id="result"></div>
+</div>
+
+</section>
+
+<script>
+const questions = [
+{
+    question: "Why is limiting function size important?",
+    answers: [
+        "It makes code harder to read",
+        "It reduces complexity and improves testing",
+        "It increases memory usage",
+        "It removes the need for comments"
+    ],
+    correct: 1
+},
+{
+    question: "True or False: Self-modifying code is allowed in JSF-AV software.",
+    answers: [
+        "True",
+        "False"
+    ],
+    correct: 1
+},
+{
+    question: "What is the main goal of JSF-AV coding standards?",
+    answers: [
+        "Make code shorter",
+        "Make code more colorful",
+        "Ensure safety, reliability, and maintainability",
+        "Reduce file size"
+    ],
+    correct: 2
+},
+{
+    question: "Which rule helps prevent overly complex functions?",
+    answers: [
+        "Limit to 200 lines and low complexity",
+        "Use more variables",
+        "Avoid comments",
+        "Write everything in one function"
+    ],
+    correct: 0
+}
+];
+
+function loadQuiz() {
+    const quizDiv = document.getElementById("quiz");
+
+    questions.forEach((q, index) => {
+        const qDiv = document.createElement("div");
+        qDiv.classList.add("card");
+
+        const title = document.createElement("p");
+        title.innerHTML = "<strong>" + (index + 1) + ". " + q.question + "</strong>";
+        qDiv.appendChild(title);
+
+        q.answers.forEach((answer, i) => {
+            const label = document.createElement("label");
+            label.classList.add("answer");
+
+            label.innerHTML = `
+                <input type="radio" name="q${index}" value="${i}">
+                ${answer}
+            `;
+
+            qDiv.appendChild(label);
+        });
+
+        quizDiv.appendChild(qDiv);
+    });
+}
+
+function submitQuiz() {
+    let score = 0;
+
+    questions.forEach((q, index) => {
+        const selected = document.querySelector(`input[name="q${index}"]:checked`);
+
+        if (selected) {
+            const answerIndex = parseInt(selected.value);
+
+            if (answerIndex === q.correct) {
+                score++;
+            }
+        }
+    });
+
+    document.getElementById("result").innerText =
+        "You got " + score + " out of " + questions.length + " correct!";
+}
+
+loadQuiz();
+</script>
+
+</body>
+</html>
